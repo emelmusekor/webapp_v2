@@ -161,13 +161,17 @@ const STEP1 = {
           ${deviceBar("번역 도우미", "한국어 → 스와힐리어")}
           <div class="deviceBody">
             <div class="gt">
+              <div class="gtLangBar"><span class="langChip">🇰🇷 한국어</span><button class="swapBtn" title="언어 바꾸기">⇄</button><span class="langChip">🌍 스와힐리어</span>
+                <span class="toolStatus"><span class="liveDot"></span>AI 번역 켜짐</span></div>
               <div class="gtPanes">
                 <div class="gtPane">
                   <div class="gtHead"><span>한국어</span><span class="clr" onclick="STEP1.clearSrc()">✕ 지우기</span></div>
-                  <textarea id="src" placeholder="번역할 한국어 문장을 입력하세요"></textarea>
+                  <textarea id="src" placeholder="번역할 한국어 문장을 입력하세요" oninput="STEP1.count()"></textarea>
+                  <div class="charCount" id="charCount">0자</div>
                 </div>
                 <div class="gtPane gtOut">
-                  <div class="gtHead"><span>스와힐리어 (가장 최근 번역)</span></div>
+                  <div class="gtHead"><span>스와힐리어 (가장 최근 번역)</span>
+                    <span class="ioIcons"><button class="ioIcon" title="듣기" onclick="STEP1.speak()">🔊</button><button class="ioIcon" title="복사" onclick="STEP1.copy()">⧉</button></span></div>
                   <div id="out" class="gtOutText empty">번역 결과가 여기에 표시됩니다.</div>
                 </div>
               </div>
@@ -212,7 +216,10 @@ const STEP1 = {
   idx: 0, selected: null, backViewed: new Set(),
 
   norm(t){ return String(t).trim().replace(/\s+/g, " "); },
-  clearSrc(){ $("#src").value = ""; $("#src").focus(); },
+  clearSrc(){ $("#src").value = ""; this.count(); $("#src").focus(); },
+  count(){ const c=$("#charCount"); if(c) c.textContent=($("#src").value.length)+"자"; },
+  speak(){ const o=$("#out"); if(o && !o.classList.contains("empty")) feedback("🔊 스와힐리어 발음을 들려줍니다. (예시 화면)","warn"); },
+  copy(){ const o=$("#out"); if(o && !o.classList.contains("empty")){ try{navigator.clipboard&&navigator.clipboard.writeText(o.textContent);}catch(_){} feedback("📋 번역을 복사했어요.","warn"); } },
 
   translate(){
     const v = $("#src").value;
@@ -226,10 +233,11 @@ const STEP1 = {
     const n = this.idx;
     const a = this.ATTEMPTS[n - 1];
     const out = $("#out"); out.classList.remove("empty"); out.textContent = a.sw;
+    out.classList.remove("aiReveal"); void out.offsetWidth; out.classList.add("aiReveal");
     $("#counter").textContent = `번역 ${this.idx} / ${this.MAX}`;
     if(n === 1) $("#resList").innerHTML = "";
     $("#resList").insertAdjacentHTML("beforeend", `
-      <div class="resItem" data-n="${n}">
+      <div class="resItem aiReveal" data-n="${n}">
         <div class="resHead"><span class="aNo">번역 ${n}</span>
           <button class="btn selBtn" data-sel="${n}" onclick="STEP1.select(${n})">이 번역 선택</button></div>
         <div class="sw">${a.sw}</div>
@@ -411,7 +419,7 @@ const STEP2 = {
                   <button class="shuffleBtn" style="float:right" onclick="STEP2.shuffle()">🔀 다른 사진</button></div>
               </div>
               <div class="canvaPanel">
-                <h5>✨ AI 문구 추천 (사진에 어울리게)</h5>
+                <div class="magicHead">✨ Magic Write · AI 문구 추천</div>
                 <button class="btn primary" style="width:100%" onclick="STEP2.recommend()">AI 문구 추천 받기 🔄</button><span class="genCounter" id="genCount"></span>
                 <div class="candGrid" id="cands"><div class="genEmpty" style="grid-column:1/-1">사진을 보고 추천받아 보세요.</div></div>
                 <hr class="panelHr"><h5>글자 크기</h5>
@@ -442,7 +450,7 @@ const STEP2 = {
     return [...this.UNIV, ...mine, ...others, ...this.DIS]; },
   recommend(){ const fp=this.pool(); const key="s2-"+this.theme; const idx=AIGEN.pickN(key,fp.length,4).map(i=>fp[i]);
     this.cands=idx; this.sel=null; this.count++; $("#genCount").textContent=`추천 ${this.count}회`;
-    $("#cands").innerHTML=this.cands.map((c,i)=>`<div class="choice" data-i="${i}" onclick="STEP2.select(${i})">
+    $("#cands").innerHTML=this.cands.map((c,i)=>`<div class="choice aiReveal d${i}" data-i="${i}" onclick="STEP2.select(${i})">
       <div class="cText">${c.en}</div>
       <button class="btn" style="margin-top:7px;font-size:12px;padding:6px 9px" onclick="event.stopPropagation();STEP2.showMeaning(${i})">🔤 뜻 보기</button>
       <div class="meaningBox" id="m${i}"><b>뜻</b> · ${c.ko}</div></div>`).join(""); feedback("","");
@@ -562,7 +570,7 @@ const STEP3 = {
     this.phase="auto"; $("#ph-clean").className="phasePill done"; $("#ph-auto").className="phasePill on";
     $("#s3hint").textContent="🖱️ 이상하게 생성된 부분을 드래그해서 지우세요.";
     const svg=$("#s3scene");
-    const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.setAttribute('class','obj'); g.setAttribute('data-id','auto');
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.setAttribute('class','obj aiReveal'); g.setAttribute('data-id','auto');
     g.innerHTML=`<circle cx="120" cy="150" r="34" fill="#fca5a5"/><circle cx="92" cy="120" r="16" fill="#f87171"/><circle cx="150" cy="118" r="18" fill="#f87171"/><circle cx="100" cy="185" r="14" fill="#f87171"/><circle cx="142" cy="186" r="15" fill="#f87171"/><path d="M120 150 l40 -30" stroke="#ef4444" stroke-width="6"/><rect class="ring" x="74" y="96" width="100" height="108" rx="10"/><text class="lbl" x="124" y="220" text-anchor="middle" fill="#b91c1c">AI 자동 생성(과장됨)</text>`;
     svg.appendChild(g);
     feedback("✨ AI가 빈 곳을 자동으로 채웠어요. 그런데 <b>과장되고 이상한 형태</b>가 생겼네요. 발표 사진에 맞지 않으니 그 부분을 찾아 지우세요.","warn");
@@ -591,6 +599,7 @@ const STEP4 = {
         <div id="editArea" style="display:none">
           <div class="vstage" id="vstage"><div class="vslide" data-i="0">👋<div class="vcap">환영 인사</div></div><div class="vslide" data-i="1">🎨<div class="vcap">함께 카드 만들기</div></div><div class="vslide" data-i="2">📸<div class="vcap">단체 사진</div></div></div>
           ${groups}<div style="margin-top:14px"><button class="btn primary" onclick="STEP4.make()">추억 영상 만들기 ▶</button></div>
+          <div class="renderWrap" id="renderWrap"><div class="rlabel">🎬 AI가 영상을 내보내는 중…</div><div class="renderTrack"><i></i></div></div>
         </div></div></div>
       <div id="fb" class="feedback"></div>
       ${teacherBox(`<b>성취수행 기준</b> · B2-2. 다양한 형태의 산출물을 생성한다.<br><b>채점</b> · 길이=15/30초, 전환=부드럽게/슬라이드/줌인, 구성=골고루, 배경음=잔잔 → 정답. 자극적·과장 선택은 오류.`)}
@@ -604,6 +613,7 @@ const STEP4 = {
   make(){ if(!this.uploaded){ feedback("먼저 사진을 업로드하세요.","warn"); return; }
     const missing=this.GROUPS.filter(g=>this.sel[g.key]===undefined); if(missing.length){ feedback(`아직 고르지 않은 항목이 있어요: ${missing.map(g=>g.label.replace(/ \(.*\)/,'')).join(", ")}.`,"warn"); return; }
     const wrong=this.GROUPS.filter(g=>!g.opts[this.sel[g.key]].ok); if(wrong.length){ feedback(`⚠️ 영상 만들기 오류 · 어울리지 않는 선택: <b>${wrong.map(g=>g.label.replace(/ \(.*\)/,'')).join(", ")}</b>. 차분하고 따뜻하게 다시 골라 주세요.`,"bad"); return; }
+    const rw=$("#renderWrap"); if(rw){ rw.classList.add("show"); const bar=rw.querySelector("i"); bar.style.animation="none"; void bar.offsetWidth; bar.style.animation=""; }
     this.playPreview(this.GROUPS[1].opts[this.sel.trans].fx); passStep("step4","정답입니다. 짧고 부드럽고 잔잔하며 골고루 담긴 따뜻한 추억 영상을 만들었어요. 🎬"); },
   mount(){ this.uploaded=false; this.sel={}; clearInterval(this.timer); }
 };
@@ -635,6 +645,8 @@ const STEP5 = {
           <button class="viewTab on" id="vtSub" onclick="STEP5.view(false)">번역 자막</button>
           <button class="viewTab" id="vtKo" onclick="STEP5.view(true)">원문 보기</button></div>
         <div class="videoStage"><span id="vEmoji" style="font-size:70px">${this.LINES[0].emoji}</span><div class="subOverlay" id="subOverlay">${this.LINES[0].ai}</div></div>
+        <div class="playbar"><i id="s5prog"></i></div>
+        <div class="waveRow">${Array.from({length:40},()=>`<span style="height:${20+Math.round(Math.random()*70)}%"></span>`).join("")}</div>
         <div class="timeline" id="s5tl">${tl}</div>
         <div class="editLineBox">
           <div class="ko">선택한 자막 ${"<b id='segNo'>1</b>"} · 원문(한국어): <b id="koRef">${this.LINES[0].ko}</b></div>
@@ -655,12 +667,13 @@ const STEP5 = {
     $("#vEmoji").textContent=this.LINES[i].emoji; $("#segNo").textContent=i+1; $("#koRef").textContent=this.LINES[i].ko;
     $("#subEdit").value=this.val[i]; this.refreshOverlay(); },
   edit(v){ this.val[this.sel]=v; if(!this.viewKo) $("#subOverlay").textContent=v; },
-  play(){ clearInterval(this.timer); const stage=$("#videoStage")||$(".videoStage"); let i=0;
+  play(){ clearInterval(this.timer); let i=0; const N=this.LINES.length;
+    const prog=()=>{ const p=$("#s5prog"); if(p) p.style.width=Math.round((i+1)/N*100)+"%"; };
     const tick=()=>{ if(!document.body.contains($(".videoStage"))){ clearInterval(this.timer); return; }
       $$("#s5tl .seg").forEach(s=>s.classList.toggle("playing",+s.dataset.i===i));
       $("#vEmoji").textContent=this.LINES[i].emoji; $("#subOverlay").classList.remove("koMode");
-      $("#subOverlay").textContent=this.val[i]; };
-    tick(); this.timer=setInterval(()=>{ i++; if(i>=this.LINES.length){ clearInterval(this.timer); $$("#s5tl .seg").forEach(s=>s.classList.remove("playing")); this.refreshOverlay(); return; } tick(); },1100); },
+      $("#subOverlay").textContent=this.val[i]; prog(); };
+    tick(); this.timer=setInterval(()=>{ i++; if(i>=N){ clearInterval(this.timer); $$("#s5tl .seg").forEach(s=>s.classList.remove("playing")); this.refreshOverlay(); return; } tick(); },1100); },
   save(){ const bad=this.LINES.map((l,i)=>({l,i})).filter(({l,i})=>!l.check(this.val[i]));
     if(bad.length){ const fix=bad.filter(({l})=>l.why);
       feedback(fix.length?`아직 고쳐야 할 자막이 있어요: <b>${fix.map(x=>x.i+1+"번").join(", ")}</b>. [원문 보기]로 이름·숫자를 다시 비교하세요.`:`자막 ${bad.map(x=>x.i+1).join(", ")}번을 다시 확인하세요.`,"warn"); return; }
@@ -687,7 +700,8 @@ const STEP6 = {
     return `<section class="module">${stepHeader(s)}<div class="modBody">
       <div class="taskBox"><b>상황</b> · 앨범에 넣을 <b>학급 단체 사진</b>이에요. 사진 사용에 <b>동의하지 않은 친구</b>·지나가던 학생과 이름·전화번호가 적힌 <b>이름표·학생증·집 주소</b> 같은 개인정보가 함께 찍혔어요.
       <b>영역을 드래그</b>해서 보호할 대상을 감싸고 <b>지우개</b>나 <b>모자이크</b>로 가리세요. 동의한 친구까지 가리면 <b>되돌리기</b>로 복원하세요.</div>
-      <div class="eraseWrap">
+      <div class="detectToast" id="s6toast">🔍 AI가 사진을 분석해 <b>얼굴 5곳과 개인정보 3곳</b>을 감지했습니다. 동의 표시와 개인정보를 확인하고 보호하세요.</div>
+      <div class="eraseWrap" id="s6wrap">
         <div class="phaseBar"><span>도구:</span><div class="actionToggle"><button class="segBtn on" id="act-erase" onclick="STEP6.setAction('erase')">🧽 지우개</button><button class="segBtn" id="act-mosaic" onclick="STEP6.setAction('mosaic')">▦ 모자이크</button></div><span class="markCount" id="markCount" style="margin-left:auto">선택 0개</span></div>
         ${this.scene()}
         <div class="eraseToolbar"><span class="eraseHint">🖱️ 보호할 대상을 영역으로 감싼 뒤 적용하세요.</span>
@@ -717,7 +731,10 @@ const STEP6 = {
     const missed=this.PROTECT.filter(id=>!this.covered(svg.querySelector(`.obj[data-id="${id}"]`)));
     if(missed.length){ feedback(`아직 보호하지 않은 개인정보가 있어요 (${missed.length}개). 동의 안 한 얼굴·이름표·학생증·집 주소를 모두 가려 주세요.`,"warn"); return; }
     passStep("step6","정답입니다. 동의받지 않은 얼굴과 이름·전화·학생증·주소 같은 개인정보를 모두 가리고, 동의한 친구는 남겼어요."); },
-  mount(){ this.action="erase"; this.marked=new Set(); this.wrongCovered=new Set(); setTimeout(()=>{ const svg=$("#s6scene"); if(svg) attachDrag(svg,r=>this.dragDone(r)); },0); }
+  mount(){ this.action="erase"; this.marked=new Set(); this.wrongCovered=new Set();
+    setTimeout(()=>{ const svg=$("#s6scene"); if(!svg) return; attachDrag(svg,r=>this.dragDone(r));
+      const rings=[...svg.querySelectorAll('.ring')]; rings.forEach(r=>r.classList.add("detect"));
+      setTimeout(()=>rings.forEach(r=>r.classList.remove("detect")), 1400); },0); }
 };
 
 /* ============================================================
@@ -744,8 +761,10 @@ const STEP7 = {
         <div class="ig">
           <div class="igTop"><div class="igAvatar">초</div><div class="igUser">행복초 3학년 1반<small>welcome_album</small></div><div class="igDots">⋯</div></div>
           <div class="igPhoto" id="igPhoto" style="padding:0">${themeScene(this.theme)}<div class="igPhotoCap" id="igCap">${"외국에서 와서 신기한 우리 친구!"}</div></div>
-          <div class="igActions"><span>♡</span><span>💬</span><span>✈️</span><span class="sp">🔖</span></div>
+          <div class="igActions"><span>❤️</span><span>💬</span><span>✈️</span><span class="sp">🔖</span></div>
+          <div class="igMeta"><span class="igLikes">좋아요 24개</span></div>
           <div class="igCap"><b>welcome_album</b> <span class="igCapText" id="igCapText">외국에서 와서 신기한 우리 친구!</span></div>
+          <div class="igTime">방금 전</div>
           <div style="padding:8px 12px"><button class="shuffleBtn" onclick="STEP7.shuffle()">🔀 다른 사진</button> <span class="themeTag" id="themeTag">사진: ${THEMES.find(t=>t.key===this.theme).desc}</span></div>
         </div>
         <div class="igPanel">
@@ -776,8 +795,10 @@ const STEP7 = {
     let pool,key; if(chosen.length===0){ pool=[{text:"오늘의 사진입니다!",ok:false,why:"사진에 어울리는 내용이 잘 드러나지 않아요. 요청을 골라 다시 써 보세요."},{text:"사진 한 장 올려요!",ok:false,why:"사진 상황이 드러나지 않아요. 요청을 골라 보세요."}]; key="s7-neu"; }
       else if(hasBad||!hasGood){ pool=this.BAD; key="s7-bad"; } else { pool=this.goodPool(); key="s7-good-"+this.theme; }
     this.item=pool[AIGEN.nextIndex(key,pool.length)]; this.used=true; this.count++;
-    $("#igCap").textContent=this.item.text; $("#igCapText").textContent=this.item.text; $("#reqCount").textContent=`다시쓰기 ${this.count}회`;
-    feedback("AI가 요청에 따라 문구를 다시 썼어요. 마음에 안 들면 요청을 바꿔 다시 눌러 보세요.","warn"); this.refreshCheck(); },
+    const cap=$("#igCap"), capt=$("#igCapText");
+    cap.textContent=this.item.text; capt.textContent=this.item.text; $("#reqCount").textContent=`다시쓰기 ${this.count}회`;
+    [cap,capt].forEach(el=>{ el.classList.remove("aiReveal"); void el.offsetWidth; el.classList.add("aiReveal"); });
+    feedback("✍️ AI가 요청에 따라 문구를 다시 썼어요. 마음에 안 들면 요청을 바꿔 다시 눌러 보세요.","warn"); this.refreshCheck(); },
   pickTarget(i){ this.tSel=i; $$("#targets .shareOpt").forEach(c=>c.classList.toggle("sel",+c.dataset.i===i)); this.refreshCheck(); },
   refreshCheck(){ const exprOk=this.used&&this.item&&this.item.ok, targetOk=this.tSel!==null&&this.SHARES[this.tSel].ok, aiOk=$("#aiFlag")&&$("#aiFlag").checked;
     const set=(id,ok,started)=>{ const e=$(id); if(!e)return; e.classList.toggle("done",ok); e.classList.toggle("fail",started&&!ok); e.querySelector(".ck").textContent=ok?"✓":(started?"✕":"✓"); };

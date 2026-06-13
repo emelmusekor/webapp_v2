@@ -393,5 +393,57 @@ textarea{width:100%;border:0;outline:0;resize:vertical;min-height:78px;padding:1
 .subOverlay.koMode{background:rgba(29,78,216,.82)}
 .errBadge{display:inline-block;margin-left:6px;font-size:10px;font-weight:900;color:#b91c1c;background:#fee2e2;border-radius:6px;padding:1px 5px}
 
+/* ---------- v5 polish: "real AI tool" feel (visual only) ---------- */
+@keyframes aiReveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.aiReveal{animation:aiReveal .45s cubic-bezier(.2,.7,.3,1) both}
+.aiReveal.d1{animation-delay:.06s}.aiReveal.d2{animation-delay:.12s}.aiReveal.d3{animation-delay:.18s}
+@keyframes shimmerMove{0%{background-position:-180% 0}100%{background-position:180% 0}}
+.aiBar{height:4px;border-radius:99px;background:linear-gradient(90deg,#dbe7ff 25%,#2563eb 50%,#dbe7ff 75%);background-size:200% 100%;animation:shimmerMove 1.1s linear infinite;margin:8px 0}
+.aiBar.gone{display:none}
+.sparkleTag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:900;color:#7c3aed;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:999px;padding:3px 9px;animation:aiReveal .4s both}
+@keyframes pulseDot{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}50%{box-shadow:0 0 0 5px rgba(34,197,94,0)}}
+.liveDot{width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;animation:pulseDot 1.6s infinite}
+.toolStatus{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#16a34a;font-weight:800;margin-left:8px}
+
+/* step1 translate affordances */
+.gtLangBar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #e5e7eb;background:#fff;font-size:13px;font-weight:800;color:#334155}
+.langChip{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:5px 12px}
+.swapBtn{border:1px solid #cfd7e6;background:#fff;border-radius:8px;width:30px;height:30px;font-weight:900;color:#1d4ed8;cursor:default}
+.ioIcons{margin-left:auto;display:flex;gap:6px}
+.ioIcon{border:1px solid #e5e7eb;background:#fff;border-radius:8px;width:30px;height:30px;display:grid;place-items:center;cursor:pointer;color:#475569}
+.ioIcon:hover{background:#f8fbff;border-color:#9bbcf7}
+.charCount{font-size:11px;color:#94a3b8;text-align:right;padding:0 12px 8px}
+
+/* step4 render progress */
+@keyframes fillBar{from{width:0}to{width:100%}}
+.renderWrap{margin:10px 0;display:none}.renderWrap.show{display:block}
+.renderWrap .rlabel{font-size:12px;font-weight:800;color:#1d4ed8;margin-bottom:5px}
+.renderTrack{height:8px;border-radius:99px;background:#e2e8f0;overflow:hidden}
+.renderTrack i{display:block;height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);animation:fillBar 1.1s ease both}
+
+/* step5 playback bar */
+.playbar{height:6px;border-radius:99px;background:#1f2937;overflow:hidden;margin:8px 0}
+.playbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f59e0b,#ef4444);transition:width .3s linear}
+.waveRow{display:flex;gap:2px;align-items:flex-end;height:26px;margin:6px 0}
+.waveRow span{flex:1;background:#cbd5e1;border-radius:2px}
+.subOverlay{transition:opacity .2s}
+
+/* step6 detection scan */
+@keyframes scanSweep{0%{transform:translateY(-100%)}100%{transform:translateY(400%)}}
+.scanLine{display:none}
+.detecting .scanLine{display:block;animation:scanSweep 1.1s ease-in-out 2}
+.eraseScene .obj .ring.detect{opacity:.5;stroke:#22c55e;stroke-dasharray:4 3}
+.detectToast{font-size:12px;font-weight:800;color:#166534;background:#dcfce7;border:1px solid #bbf7d0;border-radius:10px;padding:6px 10px;margin:8px 0;display:flex;align-items:center;gap:7px}
+
+/* step7 instagram realism */
+.igMeta{padding:0 12px 6px;font-size:12px;color:#262626}
+.igLikes{font-weight:800}
+.igTime{padding:0 12px 10px;font-size:10px;color:#8e8e8e;text-transform:uppercase;letter-spacing:.03em}
+.typing{border-right:2px solid #2563eb;animation:caret .7s steps(1) infinite}
+@keyframes caret{50%{border-color:transparent}}
+
+/* step2 magic write */
+.magicHead{display:flex;align-items:center;gap:7px;font-size:13px;color:#7c3aed;font-weight:900;margin-bottom:8px}
+
 @media(max-width:1120px){.wrap{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.criteria{grid-template-columns:1fr 1fr}.specGrid{grid-template-columns:1fr}.elemGrid{grid-template-columns:1fr}.canvaWrap{grid-template-columns:1fr}.igWrap{grid-template-columns:1fr}.ig{max-width:none}}
 @media(max-width:720px){.wrap{padding:12px}.hero h2{font-size:26px}.modHead{flex-direction:column}.criteria{grid-template-columns:1fr}.transGrid{grid-template-columns:1fr}.transArrow{transform:rotate(90deg)}}
